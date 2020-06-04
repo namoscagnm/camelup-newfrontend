@@ -30,7 +30,16 @@ type Msg
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    ( model, Cmd.none )
+    case msg of
+        FEState feStateMsg ->
+            let
+                newmodel =
+                    { model | workflowState = FEState.feTransition model.workflowState feStateMsg }
+            in
+            ( newmodel, Cmd.none )
+
+        _ ->
+            ( model, Cmd.none )
 
 
 
