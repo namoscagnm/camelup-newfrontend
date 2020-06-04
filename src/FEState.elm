@@ -1,11 +1,11 @@
-module FEState exposing (FEState, Msg, initState, viewFEState)
+module FEState exposing (Model, Msg, initState, viewFEState)
 
 import Browser
 import Html exposing (..)
 import Html.Attributes exposing (..)
 
 
-initState : FEState
+initState : Model
 initState =
     Q0 { name = "Yourname", totalPlayers = 0 }
 
@@ -23,7 +23,7 @@ type GameChar
     | GreenMan
 
 
-type FEState
+type Model
     = Q0 Q0Content
     | Q1 Q1Content
     | Q2
@@ -43,7 +43,7 @@ type Msg
     = NoOp
 
 
-feTransition : FEState -> FEAlphabet -> FEState
+feTransition : Model -> FEAlphabet -> Model
 feTransition state alphabet =
     case ( state, alphabet ) of
         ( Q0 _, Enter ) ->
@@ -74,7 +74,7 @@ viewStateQ0 content =
         ]
 
 
-viewFEState : FEState -> Html Msg
+viewFEState : Model -> Html Msg
 viewFEState state =
     case state of
         Q0 q0Content ->

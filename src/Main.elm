@@ -11,7 +11,7 @@ import Html.Attributes exposing (..)
 
 
 type alias Model =
-    { workflowState : FEState.FEState }
+    { workflowState : FEState.Model }
 
 
 init : ( Model, Cmd Msg )
