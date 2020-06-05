@@ -79,7 +79,13 @@ feTransition state alphabet =
 viewStateQ0 : Q0Content -> Html Msg
 viewStateQ0 content =
     div []
-        [ text ("Your current name:" ++ content.name)
+        [ p [] [ text "This is a camel race." ]
+        , p [] [ text "You can bet on camels to get money, try to play tricks on camels you dont like, or even bet on different camels as the race progresses." ]
+        , p [] [ text "The best: You also get money by betting right on the biggest looser on the end of the race" ]
+        , p [] [ text "As the game progresses, you will get many different options. " ]
+        , p [] [ text "First, enter your name and this screen and next well choose for you a character" ]
+        , hr [] []
+        , text ("Your current name:" ++ content.name)
         , p [] [ text ("current global players: " ++ String.fromInt content.totalPlayers) ]
         , button [ onClick JoinTable ] [ text "Join free table" ]
         ]
@@ -88,8 +94,8 @@ viewStateQ0 content =
 viewStateQ1 : Q1Content -> Html Msg
 viewStateQ1 content =
     div []
-        [ text ("Your current char:" ++ gameCharToString content.char)
-        , p [] [ text ("current table players: " ++ String.fromInt content.playersOnTable) ]
+        [ p [] [ text ("Amount of players in this room: " ++ String.fromInt content.playersOnTable) ]
+        , text ("Your current char:" ++ gameCharToString content.char)
         , p [] [ text "Other characters in this room:" ]
         , p [] [ text (List.foldl (\x y -> gameCharToString x ++ " | " ++ y) "" content.otherChars) ]
         , button [ onClick StartAndLock ] [ text "Ask to start and lock table" ]
