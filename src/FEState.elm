@@ -1,6 +1,6 @@
-module FEState exposing (Model, Msg, feTransition, initState, viewFEState)
+module FEState exposing (Model, Msg, initState, update, view)
 
-import Browser
+import GameTable exposing (..)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
@@ -20,7 +20,7 @@ type alias Q1Content =
 
 
 type alias Q2Content =
-    { text : String }
+    { text : String, gameTable : Maybe GameTable.Model }
 
 
 type GameChar
@@ -55,25 +55,41 @@ type Msg
     | StartAndLock
     | ShowRules
     | Resume
+    | GameTable GameTable.Msg
 
 
-feTransition : Model -> Msg -> Model
-feTransition state alphabet =
+update : Model -> Msg -> ( Model, Cmd Msg )
+update state alphabet =
     case ( state, alphabet ) of
         ( Q0 _, JoinTable ) ->
-            Q1 { char = PurpleWoman, playersOnTable = 0, otherChars = [ GreenMan, BrownMan ] }
+            ( Q1 { char = PurpleWoman, playersOnTable = 0, otherChars = [ GreenMan, BrownMan ] }, Cmd.none )
 
         ( Q1 _, StartAndLock ) ->
-            Q2 { text = "You are now playing the game" }
+            ( Q2 { text = "Workflow state Q2 generic message: You are now playing the game", gameTable = Just GameTable.initState }, Cmd.none )
 
         ( Q2 _, ShowRules ) ->
-            Q3
+            ( Q3, Cmd.none )
+
+        ( Q2 q2Content, GameTable msggt ) ->
+            case q2Content.gameTable of
+                Just gameTable ->
+                    let
+                        ( newGameTable, cmd ) =
+                            GameTable.update gameTable msggt
+
+                        model =
+                            Q2 { text = "Weird. FEState should be delegating this to GameTable,", gameTable = Just newGameTable }
+                    in
+                    ( model, Cmd.map GameTable cmd )
+
+                Nothing ->
+                    ( Q2 { text = "Dummy game table from FEState", gameTable = Nothing }, Cmd.none )
 
         ( Q3, Resume ) ->
-            Q2 { text = "Manual read, playing again" }
+            ( Q2 { text = "Manual read, playing again", gameTable = Nothing }, Cmd.none )
 
         _ ->
-            QError
+            ( QError, Cmd.none )
 
 
 viewStateQ0 : Q0Content -> Html Msg
@@ -104,10 +120,14 @@ viewStateQ1 content =
 
 viewStateQ2 : Q2Content -> Html Msg
 viewStateQ2 content =
-    div []
-        [ text content.text
-        , button [ onClick ShowRules ] [ text "See game rules" ]
-        ]
+    case content.gameTable of
+        Nothing ->
+            div []
+                [ text content.text
+                ]
+
+        Just gt ->
+            Html.map GameTable (GameTable.view gt)
 
 
 viewStateQ3 : Html Msg
@@ -118,8 +138,8 @@ viewStateQ3 =
         ]
 
 
-viewFEState : Model -> Html Msg
-viewFEState state =
+view : Model -> Html Msg
+view state =
     case state of
         Q0 q0Content ->
             viewStateQ0 q0Content
@@ -144,4 +164,4 @@ viewNotImplemented =
 
 viewError : Html Msg
 viewError =
-    text "State transition error"
+    text "State transition error inside FEState logic"

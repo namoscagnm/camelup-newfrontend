@@ -33,10 +33,10 @@ update msg model =
     case msg of
         FEState feStateMsg ->
             let
-                newmodel =
-                    { model | workflowState = FEState.feTransition model.workflowState feStateMsg }
+                ( workflowState, newcmd ) =
+                    FEState.update model.workflowState feStateMsg
             in
-            ( newmodel, Cmd.none )
+            ( { model | workflowState = workflowState }, Cmd.map FEState newcmd )
 
         _ ->
             ( model, Cmd.none )
@@ -49,7 +49,7 @@ update msg model =
 view : Model -> Html Msg
 view model =
     Html.map FEState
-        (viewFEState model.workflowState)
+        (FEState.view model.workflowState)
 
 
 
