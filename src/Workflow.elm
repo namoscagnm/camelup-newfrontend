@@ -1,4 +1,4 @@
-module FEState exposing (Model, Msg, initState, update, view)
+module Workflow exposing (Model, Msg, initState, update, view)
 
 import GameTable exposing (..)
 import Html exposing (..)

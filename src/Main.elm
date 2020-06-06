@@ -1,9 +1,9 @@
 module Main exposing (..)
 
 import Browser
-import FEState exposing (..)
 import Html exposing (..)
 import Html.Attributes exposing (..)
+import Workflow exposing (..)
 
 
 
@@ -11,12 +11,12 @@ import Html.Attributes exposing (..)
 
 
 type alias Model =
-    { workflowState : FEState.Model }
+    { workflowState : Workflow.Model }
 
 
 init : ( Model, Cmd Msg )
 init =
-    ( { workflowState = FEState.initState }, Cmd.none )
+    ( { workflowState = Workflow.initState }, Cmd.none )
 
 
 
@@ -25,18 +25,18 @@ init =
 
 type Msg
     = NoOp
-    | FEState FEState.Msg
+    | Workflow Workflow.Msg
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        FEState feStateMsg ->
+        Workflow workFlowMsg ->
             let
                 ( workflowState, newcmd ) =
-                    FEState.update model.workflowState feStateMsg
+                    Workflow.update model.workflowState workFlowMsg
             in
-            ( { model | workflowState = workflowState }, Cmd.map FEState newcmd )
+            ( { model | workflowState = workflowState }, Cmd.map Workflow newcmd )
 
         _ ->
             ( model, Cmd.none )
@@ -48,8 +48,8 @@ update msg model =
 
 view : Model -> Html Msg
 view model =
-    Html.map FEState
-        (FEState.view model.workflowState)
+    Html.map Workflow
+        (Workflow.view model.workflowState)
 
 
 
