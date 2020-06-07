@@ -191,8 +191,6 @@ viewStateQ5 : Html Msg
 viewStateQ5 =
     div []
         [ text "Ha!! Great game, isnt it? I hope you enjoyed! Tell to your friends about it and see you next time!"
-        , p [] [ text "Simulate server command:" ]
-        , button [] [ text "Play again" ]
         ]
 
 
