@@ -88,6 +88,8 @@ view : Model -> Html Msg
 view model =
     div []
         [ viewGameTable model.state
+        , hr [] []
+        , p [] [ text "Switch role" ]
         , button [ onClick GoPassive ] [ text "Go passive" ]
         , button [ onClick GoActive ] [ text "Go active" ]
         ]
@@ -137,6 +139,7 @@ viewStateQ0 =
         , hr [] []
         , p [] [ text "Simulate user command" ]
         , button [ onClick Warmup ] [ text "Warm a camel up" ]
+        , hr [] []
         , p [] [ text "Simulate a server command" ]
         , button [ onClick Start ] [ text "Start" ]
         ]
@@ -164,6 +167,7 @@ viewStateQ2 : Html Msg
 viewStateQ2 =
     div []
         [ text "That was an amazing race and you can now get money for your bets on the previous leg!"
+        , hr [] []
         , p [] [ text "Simulate server command:" ]
         , button [ onClick GotLegMoney ] [ text "Got leg money" ]
         ]
@@ -173,6 +177,7 @@ viewStateQ3 : Html Msg
 viewStateQ3 =
     div []
         [ text "You got some money, but now as I said its time go get much more!! Who bet corretly on the first winner? Better yet, who was the FIRST to bet correctly? You can get up to 8 points if you were the earliest lucky one!"
+        , hr [] []
         , p [] [ text "Simulate server command:" ]
         , button [ onClick GotFinalWinnerMoney ] [ text "Got final winner money" ]
         ]
@@ -182,6 +187,7 @@ viewStateQ4 : Html Msg
 viewStateQ4 =
     div []
         [ text "Maybe you got money,maybe you didnt. But as far as good news go, you have yet one chance more! Because betting on the final looser can also give you great mone!"
+        , hr [] []
         , p [] [ text "Simulate server command:" ]
         , button [ onClick GotFinalLooserMoney ] [ text "Got final looser money" ]
         ]
@@ -198,6 +204,7 @@ viewStateQ6 : Html Msg
 viewStateQ6 =
     div []
         [ text "After many ups and downs, the race is finally finished! After collecing this legs money, bigger prizes are to come! If you got the final winner or final looser right, your pocket will leave you feeling you carry a stone of gold :)"
+        , hr [] []
         , p [] [ text "Simulate server command:" ]
         , button [ onClick GotLegMoney ] [ text "Got leg money" ]
         ]
