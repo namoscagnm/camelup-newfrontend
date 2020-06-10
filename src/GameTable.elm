@@ -157,6 +157,13 @@ viewStateQ1 =
     div []
         [ text "You can now get a point by shaking the dice, or get no points now and try to bet in a camel for the current leg, or put a mirage tile to annoy other camels and get some money if they fall there. You can also put a oasis tile to help some camel (you also get a point if he lands there), or bet on the final winner or looser"
         , hr [] []
+        , p [] [ text "Simulate an user command" ]
+        , button [] [ text "Shake a dice" ]
+        , button [] [ text "Put a desert tile" ]
+        , button [] [ text "Bet on a camel for this leg" ]
+        , button [] [ text "Bet who will win final round" ]
+        , button [] [ text "Bet on last camel on final round" ]
+        , hr [] []
         , p [] [ text "Simulate a server command" ]
         , button [ onClick LastDiceThrown ] [ text "Leg finished" ]
         , button [ onClick FinishedRace ] [ text "Finish race" ]
