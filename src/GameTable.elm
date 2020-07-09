@@ -4,10 +4,11 @@ import Element exposing (..)
 import Element.Background as Background
 import Element.Input as Input
 import Html exposing (Html)
+import List exposing (..)
 
 
 type alias Model =
-    { state : State, menuState : MenuState, gameTable : GameTable }
+    { menuState : MenuState, gameTable : GameTable }
 
 
 type State
@@ -23,28 +24,28 @@ type State
 
 
 type alias GameTable =
-    { circuit : List CircuitItem, playerStatuses : List PlayerStatus }
+    { state : State
+    , circuit : List CircuitItem
+    , playerStatuses : List PlayerStatus
+    , previousDices : List String
+    , avaiableLegBets : List LegBet
+    , personalItems : PersonalItems
+    }
 
 
-type CamelColor
-    = Black
-    | Blue
-    | Green
-    | Orange
-    | Red
+type alias PlayerStatus =
+    { name : String, money : Int, bets : List LegBet }
 
 
-type DesertTile
-    = Mirage
-    | Oasis
+type alias LegBet =
+    { color : String, value : Int }
 
 
-type Decision
-    = Pyramid
-    | BetOnLegWinner CamelColor
-    | BetOnBiggestLooser CamelColor
-    | BetOnBiggestWinner CamelColor
-    | PutTile DesertTile Int
+type alias PersonalItems =
+    { tiles : List String
+    , bigWinnerBets : List String
+    , bigLooserBets : List String
+    }
 
 
 type alias MenuState =
@@ -53,10 +54,10 @@ type alias MenuState =
 
 initState : Model
 initState =
-    { state = Q0
-    , menuState = { showStateDesc = False }
+    { menuState = { showStateDesc = False }
     , gameTable =
-        { circuit =
+        { state = Q0
+        , circuit =
             [ { position = "6", items = "mirage from gustavo" }
             , { position = "4", items = "black, blue, green, yellow, orange" }
             , { position = "3", items = "oasis from paula" }
@@ -74,6 +75,14 @@ initState =
                     ]
               }
             ]
+        , previousDices = [ "blue", "green", "red", "black" ]
+        , avaiableLegBets = [ { color = "blue", value = 5 }, { color = "orange", value = 3 } ]
+        , personalItems =
+            { tiles =
+                [ "Oasis", "Mirage" ]
+            , bigWinnerBets = [ "black", "blue", "green", "orange" ]
+            , bigLooserBets = [ "blue", "green", "orange" ]
+            }
         }
     }
 
@@ -93,55 +102,62 @@ type Msg
 
 update : Model -> Msg -> ( Model, Cmd Msg )
 update model msg =
-    case ( model.state, msg ) of
+    let
+        oldGameTable =
+            model.gameTable
+
+        newGameTableState newState =
+            { oldGameTable | state = newState }
+    in
+    case ( model.gameTable.state, msg ) of
         ( Q0, GoActive ) ->
-            ( { model | state = Q0 }, Cmd.none )
+            ( { model | gameTable = newGameTableState Q0 }, Cmd.none )
 
         ( Q0, GoPassive ) ->
-            ( { model | state = Q0_passive }, Cmd.none )
+            ( { model | gameTable = newGameTableState Q0_passive }, Cmd.none )
 
         ( Q0, Warmup ) ->
-            ( { model | state = Q0 }, Cmd.none )
+            ( { model | gameTable = newGameTableState Q0 }, Cmd.none )
 
         ( Q0, Start ) ->
-            ( { model | state = Q1 }, Cmd.none )
+            ( { model | gameTable = newGameTableState Q1 }, Cmd.none )
 
         ( Q1, LastDiceThrown ) ->
-            ( { model | state = Q2 }, Cmd.none )
+            ( { model | gameTable = newGameTableState Q2 }, Cmd.none )
 
         ( Q1, FinishedRace ) ->
-            ( { model | state = Q6 }, Cmd.none )
+            ( { model | gameTable = newGameTableState Q6 }, Cmd.none )
 
         ( Q0_passive, GoActive ) ->
-            ( { model | state = Q0 }, Cmd.none )
+            ( { model | gameTable = newGameTableState Q0 }, Cmd.none )
 
         ( Q0_passive, GoPassive ) ->
-            ( { model | state = Q0_passive }, Cmd.none )
+            ( { model | gameTable = newGameTableState Q0_passive }, Cmd.none )
 
         ( Q2, GotLegMoney ) ->
-            ( { model | state = Q1 }, Cmd.none )
+            ( { model | gameTable = newGameTableState Q1 }, Cmd.none )
 
         ( Q2, FinishedRace ) ->
-            ( { model | state = Q6 }, Cmd.none )
+            ( { model | gameTable = newGameTableState Q6 }, Cmd.none )
 
         ( Q3, GotFinalWinnerMoney ) ->
-            ( { model | state = Q4 }, Cmd.none )
+            ( { model | gameTable = newGameTableState Q4 }, Cmd.none )
 
         ( Q4, GotFinalLooserMoney ) ->
-            ( { model | state = Q5 }, Cmd.none )
+            ( { model | gameTable = newGameTableState Q5 }, Cmd.none )
 
         ( Q6, GotLegMoney ) ->
-            ( { model | state = Q3 }, Cmd.none )
+            ( { model | gameTable = newGameTableState Q3 }, Cmd.none )
 
         _ ->
-            ( { model | state = QError }, Cmd.none )
+            ( { model | gameTable = newGameTableState QError }, Cmd.none )
 
 
 view : Model -> Html Msg
 view model =
     layout [] <|
         column []
-            [ viewGameTable model.state model.menuState model.gameTable.circuit
+            [ viewGameTable model.gameTable.state model.menuState model.gameTable.circuit model.gameTable.previousDices model.gameTable.avaiableLegBets model.gameTable.personalItems
             , viewStatus model.gameTable.playerStatuses
             ]
 
@@ -158,16 +174,12 @@ view model =
         --}
 
 
-type alias PlayerStatus =
-    { name : String, money : Int, bets : List { color : String, value : Int } }
-
-
 viewStatus : List PlayerStatus -> Element msg
-viewStatus playerStatus =
+viewStatus playerStatuses =
     Element.column [ width fill ]
         [ paragraph [] [ text "--- Status view ---" ]
         , Element.table []
-            { data = playerStatus
+            { data = playerStatuses
             , columns =
                 [ { header = Element.text "Name"
                   , width = fill
@@ -190,8 +202,8 @@ viewStatus playerStatus =
         ]
 
 
-viewGameTable : State -> MenuState -> List CircuitItem -> Element Msg
-viewGameTable state menuState circuitItems =
+viewGameTable : State -> MenuState -> List CircuitItem -> List String -> List LegBet -> PersonalItems -> Element Msg
+viewGameTable state menuState circuitItems previousDices avaiableLegBets personalItems =
     case state of
         --Camels are sleeping and have to be woken up
         Q0 ->
@@ -202,7 +214,7 @@ viewGameTable state menuState circuitItems =
 
         -- Typical game flow
         Q1 ->
-            viewStateQ1 menuState circuitItems
+            viewStateQ1 menuState circuitItems previousDices avaiableLegBets personalItems
 
         Q2 ->
             viewStateQ2
@@ -304,14 +316,14 @@ viewStateDescription isActive description =
                 ]
 
 
-viewStateQ1 : MenuState -> List CircuitItem -> Element Msg
-viewStateQ1 menuState circuitItems =
+viewStateQ1 : MenuState -> List CircuitItem -> List String -> List LegBet -> PersonalItems -> Element Msg
+viewStateQ1 menuState circuitItems previousDices avaiableLegBets personalItems =
     Element.column [ spacingXY 0 10, width fill ]
         [ viewStateDescription menuState.showStateDesc "Q1: You can now get a point by shaking the dice, or get no points now and try to bet in a camel for the current leg, or put a mirage tile to annoy other camels and get some money if they fall there. You can also put a oasis tile to help some camel (you also get a point if he lands there), or bet on the final winner or looser"
         , viewCircuit circuitItems
-        , viewDiceRecord
-        , viewGlobalItems
-        , viewPersonalItems
+        , viewDiceRecord previousDices
+        , viewGlobalItems avaiableLegBets
+        , viewPersonalItems personalItems
         , column [ width fill ]
             [ paragraph [] [ text "--- Simulate a server command ---" ]
             , Input.button
@@ -330,30 +342,58 @@ viewStateQ1 menuState circuitItems =
         ]
 
 
-viewGlobalItems : Element msg
-viewGlobalItems =
+viewGlobalItems : List LegBet -> Element msg
+viewGlobalItems avaiableLegBets =
+    let
+        betButton currentBet =
+            Input.button []
+                { onPress = Nothing
+                , label = text (currentBet.color ++ "/" ++ String.fromInt currentBet.value ++ ", ")
+                }
+
+        allBetButtons =
+            List.map betButton avaiableLegBets
+    in
     column [ width fill ]
         [ paragraph [] [ text "--- Items avaiable to all ---" ]
         , paragraph [] [ text "Pyramid" ]
-        , paragraph [] [ text "Bets on leg winners: black/5, blue/3, green/5, orange/2, red/5" ]
+        , paragraph []
+            ([ text "Bets on leg winners:"
+             ]
+                ++ allBetButtons
+            )
         ]
 
 
-viewPersonalItems : Element msg
-viewPersonalItems =
+viewPersonalItems : PersonalItems -> Element msg
+viewPersonalItems personalItems =
+    let
+        tilesText =
+            String.join "," personalItems.tiles
+
+        bigWinnerBetsText =
+            String.join "," personalItems.bigWinnerBets
+
+        bigLooserBetsText =
+            String.join "," personalItems.bigLooserBets
+    in
     column [ width fill ]
         [ paragraph [] [ text "-- Items avaiable to you ---" ]
-        , paragraph [] [ text "Tiles: Oasis, mirage" ]
-        , paragraph [] [ text "Big winner bets: black, blue, green, orange, red" ]
-        , paragraph [] [ text "Big looser bets: black, blue, green, orange, red" ]
+        , paragraph [] [ text ("Tiles: " ++ tilesText) ]
+        , paragraph [] [ text ("Big winner bets: " ++ bigWinnerBetsText) ]
+        , paragraph [] [ text ("Big looser bets: " ++ bigLooserBetsText) ]
         ]
 
 
-viewDiceRecord : Element msg
-viewDiceRecord =
+viewDiceRecord : List String -> Element msg
+viewDiceRecord previousDices =
+    let
+        myString =
+            String.join "," previousDices
+    in
     column [ width fill ]
         [ paragraph [] [ text "--- Camels already moved on this leg ---" ]
-        , paragraph [] [ text "blue, green, red" ]
+        , paragraph [] [ text myString ]
         ]
 
 
