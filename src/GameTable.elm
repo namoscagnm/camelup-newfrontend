@@ -309,78 +309,51 @@ viewStateQ1 menuState circuitItems =
     Element.column [ spacingXY 0 10, width fill ]
         [ viewStateDescription menuState.showStateDesc "Q1: You can now get a point by shaking the dice, or get no points now and try to bet in a camel for the current leg, or put a mirage tile to annoy other camels and get some money if they fall there. You can also put a oasis tile to help some camel (you also get a point if he lands there), or bet on the final winner or looser"
         , viewCircuit circuitItems
-        , row [ width fill ]
-            [ column [ width fill ]
-                [ paragraph [] [ text "--- Items avaiable to all ---" ]
-                , paragraph [] [ text "Pyramid" ]
-                , paragraph [] [ text "Bets on leg winners: black/5, blue/3, green/5, orange/2, red/5" ]
+        , viewDiceRecord
+        , viewGlobalItems
+        , viewPersonalItems
+        , column [ width fill ]
+            [ paragraph [] [ text "--- Simulate a server command ---" ]
+            , Input.button
+                [ Background.color (rgb255 0 255 0)
                 ]
-            ]
-        , row [ width fill ]
-            [ column [ width fill ]
-                [ paragraph [] [ text "-- Items avaiable to you ---" ]
-                , paragraph [] [ text "Tiles: Oasis, mirage" ]
-                , paragraph [] [ text "Big winner bets: black, blue, green, orange, red" ]
-                , paragraph [] [ text "Big looser bets: black, blue, green, orange, red" ]
+                { onPress = Just LastDiceThrown
+                , label = el [] <| text "Leg finished"
+                }
+            , Input.button
+                [ Background.color (rgb255 0 255 0)
                 ]
-            ]
-        , row [ width fill ]
-            [ column [ width fill ]
-                [ paragraph [] [ text "--- Simulate a server command ---" ]
-                , Input.button
-                    [ Background.color (rgb255 0 255 0)
-                    ]
-                    { onPress = Just LastDiceThrown
-                    , label = el [] <| text "Leg finished"
-                    }
-                , Input.button
-                    [ Background.color (rgb255 0 255 0)
-                    ]
-                    { onPress = Just FinishedRace
-                    , label = el [] <| text "Finish race"
-                    }
-                ]
+                { onPress = Just FinishedRace
+                , label = el [] <| text "Finish race"
+                }
             ]
         ]
 
 
-shakeElement : Element Msg
-shakeElement =
-    el [] (text "Shake pyramid")
-
-
-betElement : Element Msg
-betElement =
-    column []
-        [ el [] (text "Green (5)")
-        , el [] (text "Blue (3)")
+viewGlobalItems : Element msg
+viewGlobalItems =
+    column [ width fill ]
+        [ paragraph [] [ text "--- Items avaiable to all ---" ]
+        , paragraph [] [ text "Pyramid" ]
+        , paragraph [] [ text "Bets on leg winners: black/5, blue/3, green/5, orange/2, red/5" ]
         ]
 
 
-tileElement : Element Msg
-tileElement =
-    column []
-        [ row []
-            [ el [ width fill ] (text "Oasis")
-            , el [ width fill ] (text "Mirage")
-            ]
-        , el [ width fill ] (text "Put on pos")
+viewPersonalItems : Element msg
+viewPersonalItems =
+    column [ width fill ]
+        [ paragraph [] [ text "-- Items avaiable to you ---" ]
+        , paragraph [] [ text "Tiles: Oasis, mirage" ]
+        , paragraph [] [ text "Big winner bets: black, blue, green, orange, red" ]
+        , paragraph [] [ text "Big looser bets: black, blue, green, orange, red" ]
         ]
 
 
-betOnLooserElement : Element Msg
-betOnLooserElement =
-    column []
-        [ el [] (text "Green")
-        , el [] (text "Blue")
-        ]
-
-
-betOnWinnerElement : Element Msg
-betOnWinnerElement =
-    column []
-        [ el [] (text "Green")
-        , el [] (text "Blue")
+viewDiceRecord : Element msg
+viewDiceRecord =
+    column [ width fill ]
+        [ paragraph [] [ text "--- Camels already moved on this leg ---" ]
+        , paragraph [] [ text "blue, green, red" ]
         ]
 
 
