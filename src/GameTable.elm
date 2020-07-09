@@ -2,14 +2,12 @@ module GameTable exposing (Model, Msg, initState, update, view)
 
 import Element exposing (..)
 import Element.Background as Background
-import Element.Border as Border
 import Element.Input as Input
 import Html exposing (Html)
-import Html.Events exposing (..)
 
 
 type alias Model =
-    { state : State }
+    { state : State, menuState : MenuState, gameTable : GameTable }
 
 
 type State
@@ -24,9 +22,60 @@ type State
     | QError
 
 
+type alias GameTable =
+    { circuit : List CircuitItem, playerStatuses : List PlayerStatus }
+
+
+type CamelColor
+    = Black
+    | Blue
+    | Green
+    | Orange
+    | Red
+
+
+type DesertTile
+    = Mirage
+    | Oasis
+
+
+type Decision
+    = Pyramid
+    | BetOnLegWinner CamelColor
+    | BetOnBiggestLooser CamelColor
+    | BetOnBiggestWinner CamelColor
+    | PutTile DesertTile Int
+
+
+type alias MenuState =
+    { showStateDesc : Bool }
+
+
 initState : Model
 initState =
-    { state = Q0 }
+    { state = Q0
+    , menuState = { showStateDesc = False }
+    , gameTable =
+        { circuit =
+            [ { position = "6", items = "mirage from gustavo" }
+            , { position = "4", items = "black, blue, green, yellow, orange" }
+            , { position = "3", items = "oasis from paula" }
+            ]
+        , playerStatuses =
+            [ { name = "Marina"
+              , money = 5
+              , bets = [ { color = "green", value = 5 } ]
+              }
+            , { name = "Joao"
+              , money = 4
+              , bets =
+                    [ { color = "blue", value = 5 }
+                    , { color = "green", value = 3 }
+                    ]
+              }
+            ]
+        }
+    }
 
 
 type Msg
@@ -92,8 +141,8 @@ view : Model -> Html Msg
 view model =
     layout [] <|
         column []
-            [ viewGameTable model.state
-            , showStatus
+            [ viewGameTable model.state model.menuState model.gameTable.circuit
+            , viewStatus model.gameTable.playerStatuses
             ]
 
 
@@ -109,31 +158,51 @@ view model =
         --}
 
 
-showStatus : Element Msg
-showStatus =
-    column []
-        [ paragraph [] [ text "Marina: 5 money, 5 on gren, 3 on blue" ]
-        , paragraph [] [ text "Paulo: 5 money, 5 on gren, 3 on blue" ]
-        , paragraph [] [ text "Sarra: 5 money, 5 on gren, 3 on blue" ]
-        , paragraph [] [ text "Gustavo: 5 money, 5 on gren, 3 on blue" ]
-        , paragraph [] [ text "Marua: 5 money, 5 on gren, 3 on blue" ]
-        , paragraph [] [ text "Diego: 5 money, 5 on gren, 3 on blue" ]
-        , paragraph [] [ text "Talita: 5 money, 5 on gren, 3 on blue" ]
-        , paragraph [] [ text "Thiago: 5 money, 5 on gren, 3 on blue" ]
+type alias PlayerStatus =
+    { name : String, money : Int, bets : List { color : String, value : Int } }
+
+
+viewStatus : List PlayerStatus -> Element msg
+viewStatus playerStatus =
+    Element.column [ width fill ]
+        [ paragraph [] [ text "--- Status view ---" ]
+        , Element.table []
+            { data = playerStatus
+            , columns =
+                [ { header = Element.text "Name"
+                  , width = fill
+                  , view =
+                        \person ->
+                            Element.text person.name
+                  }
+                , { header = Element.text "Money"
+                  , width = fill
+                  , view =
+                        \person -> Element.text (String.fromInt person.money)
+                  }
+                , { header = Element.text "Bets"
+                  , width = fill
+                  , view =
+                        \person -> Element.text "TBD"
+                  }
+                ]
+            }
         ]
 
 
-viewGameTable : State -> Element Msg
-viewGameTable state =
+viewGameTable : State -> MenuState -> List CircuitItem -> Element Msg
+viewGameTable state menuState circuitItems =
     case state of
+        --Camels are sleeping and have to be woken up
         Q0 ->
-            viewStateQ0
+            viewStateQ0 menuState circuitItems
 
         Q0_passive ->
             viewStateQ0_passive
 
+        -- Typical game flow
         Q1 ->
-            viewStateQ1
+            viewStateQ1 menuState circuitItems
 
         Q2 ->
             viewStateQ2
@@ -160,25 +229,51 @@ viewGameTable state =
 --}
 
 
-viewStateQ0 : Element Msg
-viewStateQ0 =
+viewStateQ0 : MenuState -> List CircuitItem -> Element Msg
+viewStateQ0 menuState circuitItems =
     Element.column [ width fill ]
-        [ Element.paragraph []
-            [ Element.text "Q0: All five camels are sleeping and you have to wake them up. Roll the dices until they arent asleep anymore. Please, hurry up! Other players are waiting for you :)"
-            ]
-        , Element.paragraph [] [ text "Simulate user command" ]
+        [ viewStateDescription menuState.showStateDesc "Q0: All five camels are sleeping and you have to wake them up. Roll the dices until they arent asleep anymore. Please, hurry up! Other players are waiting for you :)"
+        , viewCircuit circuitItems
+        , Element.paragraph [] [ text "--- Simulate user command ---" ]
         , Input.button
             [ Background.color (rgb255 0 255 0)
             ]
             { onPress = Just Warmup
             , label = el [] <| text "Warm camel up"
             }
-        , paragraph [] [ text "Simulate a server command" ]
+        , paragraph [] [ text "--- Simulate a server command ---" ]
         , Input.button
             [ Background.color (rgb255 0 255 0)
             ]
             { onPress = Just Start
             , label = el [] <| text "Start"
+            }
+        ]
+
+
+type alias CircuitItem =
+    { position : String, items : String }
+
+
+viewCircuit : List CircuitItem -> Element msg
+viewCircuit circuitItems =
+    Element.column []
+        [ paragraph [] [ text "--- Circuit view---" ]
+        , Element.table []
+            { data = circuitItems
+            , columns =
+                [ { header = Element.text "Position"
+                  , width = fill
+                  , view =
+                        \person ->
+                            Element.text person.position
+                  }
+                , { header = Element.text "Items"
+                  , width = fill
+                  , view =
+                        \person -> Element.text person.items
+                  }
+                ]
             }
         ]
 
@@ -195,56 +290,97 @@ viewStateQ0_passive =
         --}
 
 
-viewStateQ1 : Element Msg
-viewStateQ1 =
-    Element.column [ spacingXY 0 10 ]
-        [ Element.paragraph []
-            [ Element.text "Q1: You can now get a point by shaking the dice, or get no points now and try to bet in a camel for the current leg, or put a mirage tile to annoy other camels and get some money if they fall there. You can also put a oasis tile to help some camel (you also get a point if he lands there), or bet on the final winner or looser"
+viewStateDescription : Bool -> String -> Element Msg
+viewStateDescription isActive description =
+    case isActive of
+        False ->
+            Element.paragraph []
+                [ Element.text ""
+                ]
+
+        True ->
+            Element.paragraph []
+                [ Element.text description
+                ]
+
+
+viewStateQ1 : MenuState -> List CircuitItem -> Element Msg
+viewStateQ1 menuState circuitItems =
+    Element.column [ spacingXY 0 10, width fill ]
+        [ viewStateDescription menuState.showStateDesc "Q1: You can now get a point by shaking the dice, or get no points now and try to bet in a camel for the current leg, or put a mirage tile to annoy other camels and get some money if they fall there. You can also put a oasis tile to help some camel (you also get a point if he lands there), or bet on the final winner or looser"
+        , viewCircuit circuitItems
+        , row [ width fill ]
+            [ column [ width fill ]
+                [ paragraph [] [ text "--- Items avaiable to all ---" ]
+                , paragraph [] [ text "Pyramid" ]
+                , paragraph [] [ text "Bets on leg winners: black/5, blue/3, green/5, orange/2, red/5" ]
+                ]
             ]
-        , paragraph [] [ text "Simulate an user command" ]
-        , Input.button
-            [ Background.color (rgb255 0 255 0)
+        , row [ width fill ]
+            [ column [ width fill ]
+                [ paragraph [] [ text "-- Items avaiable to you ---" ]
+                , paragraph [] [ text "Tiles: Oasis, mirage" ]
+                , paragraph [] [ text "Big winner bets: black, blue, green, orange, red" ]
+                , paragraph [] [ text "Big looser bets: black, blue, green, orange, red" ]
+                ]
             ]
-            { onPress = Nothing
-            , label = el [] <| text "Shake a dice"
-            }
-        , Input.button
-            [ Background.color (rgb255 0 255 0)
+        , row [ width fill ]
+            [ column [ width fill ]
+                [ paragraph [] [ text "--- Simulate a server command ---" ]
+                , Input.button
+                    [ Background.color (rgb255 0 255 0)
+                    ]
+                    { onPress = Just LastDiceThrown
+                    , label = el [] <| text "Leg finished"
+                    }
+                , Input.button
+                    [ Background.color (rgb255 0 255 0)
+                    ]
+                    { onPress = Just FinishedRace
+                    , label = el [] <| text "Finish race"
+                    }
+                ]
             ]
-            { onPress = Nothing
-            , label = el [] <| text "Put a desert tile"
-            }
-        , Input.button
-            [ Background.color (rgb255 0 255 0)
+        ]
+
+
+shakeElement : Element Msg
+shakeElement =
+    el [] (text "Shake pyramid")
+
+
+betElement : Element Msg
+betElement =
+    column []
+        [ el [] (text "Green (5)")
+        , el [] (text "Blue (3)")
+        ]
+
+
+tileElement : Element Msg
+tileElement =
+    column []
+        [ row []
+            [ el [ width fill ] (text "Oasis")
+            , el [ width fill ] (text "Mirage")
             ]
-            { onPress = Nothing
-            , label = el [] <| text "Bet on legs winner"
-            }
-        , Input.button
-            [ Background.color (rgb255 0 255 0)
-            ]
-            { onPress = Nothing
-            , label = el [] <| text "Bet on final winner"
-            }
-        , Input.button
-            [ Background.color (rgb255 0 255 0)
-            ]
-            { onPress = Nothing
-            , label = el [] <| text "Bet on final looser"
-            }
-        , paragraph [] [ text "Simulate a server command" ]
-        , Input.button
-            [ Background.color (rgb255 0 255 0)
-            ]
-            { onPress = Just LastDiceThrown
-            , label = el [] <| text "Leg finished"
-            }
-        , Input.button
-            [ Background.color (rgb255 0 255 0)
-            ]
-            { onPress = Just FinishedRace
-            , label = el [] <| text "Finish race"
-            }
+        , el [ width fill ] (text "Put on pos")
+        ]
+
+
+betOnLooserElement : Element Msg
+betOnLooserElement =
+    column []
+        [ el [] (text "Green")
+        , el [] (text "Blue")
+        ]
+
+
+betOnWinnerElement : Element Msg
+betOnWinnerElement =
+    column []
+        [ el [] (text "Green")
+        , el [] (text "Blue")
         ]
 
 
