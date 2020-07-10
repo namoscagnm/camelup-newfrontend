@@ -1,9 +1,11 @@
-module GameTable exposing (Model, Msg, encodeGameTable, initState, update, view)
+module GameTable exposing (Model, Msg, decodeGameTable, encodeGameTable, initState, sampleGameTable, update, view)
 
 import Element exposing (..)
 import Element.Background as Background
 import Element.Input as Input
 import Html exposing (Html)
+import Json.Decode exposing (..)
+import Json.Decode.Pipeline exposing (required)
 import Json.Encode exposing (..)
 import List exposing (..)
 
@@ -56,34 +58,38 @@ type alias MenuState =
 initState : Model
 initState =
     { menuState = { showStateDesc = False }
-    , gameTable =
-        { state = Q0
-        , circuit =
-            [ { position = "6", items = "mirage from gustavo" }
-            , { position = "4", items = "black, blue, green, yellow, orange" }
-            , { position = "3", items = "oasis from paula" }
-            ]
-        , playerStatuses =
-            [ { name = "Marina"
-              , money = 5
-              , legBets = [ { color = "green", value = 5 } ]
-              }
-            , { name = "Joao"
-              , money = 4
-              , legBets =
-                    [ { color = "blue", value = 5 }
-                    , { color = "green", value = 3 }
-                    ]
-              }
-            ]
-        , previousDices = [ "blue", "green", "red", "black" ]
-        , avaiableLegBets = [ { color = "blue", value = 5 }, { color = "orange", value = 3 } ]
-        , personalItems =
-            { tiles =
-                [ "Oasis", "Mirage" ]
-            , bigWinnerBets = [ "black", "blue", "green", "orange" ]
-            , bigLooserBets = [ "blue", "green", "orange" ]
-            }
+    , gameTable = sampleGameTable
+    }
+
+
+sampleGameTable : GameTable
+sampleGameTable =
+    { state = Q0
+    , circuit =
+        [ { position = "6", items = "mirage from gustavo" }
+        , { position = "4", items = "black, blue, green, yellow, orange" }
+        , { position = "3", items = "oasis from paula" }
+        ]
+    , playerStatuses =
+        [ { name = "Marina"
+          , money = 5
+          , legBets = [ { color = "green", value = 5 } ]
+          }
+        , { name = "Joao"
+          , money = 4
+          , legBets =
+                [ { color = "blue", value = 5 }
+                , { color = "green", value = 3 }
+                ]
+          }
+        ]
+    , previousDices = [ "blue", "green", "red", "black" ]
+    , avaiableLegBets = [ { color = "blue", value = 5 }, { color = "orange", value = 3 } ]
+    , personalItems =
+        { tiles =
+            [ "Oasis", "Mirage" ]
+        , bigWinnerBets = [ "black", "blue", "green", "orange" ]
+        , bigLooserBets = [ "blue", "green", "orange" ]
         }
     }
 
@@ -489,12 +495,26 @@ encodeCircuit circuitItem =
         ]
 
 
+decodeCircuit : Json.Decode.Decoder CircuitItem
+decodeCircuit =
+    Json.Decode.succeed CircuitItem
+        |> Json.Decode.Pipeline.required "position" Json.Decode.string
+        |> Json.Decode.Pipeline.required "items" Json.Decode.string
+
+
 encodeLegBet : LegBet -> Json.Encode.Value
 encodeLegBet legBet =
     Json.Encode.object
         [ ( "color", Json.Encode.string legBet.color )
         , ( "value", Json.Encode.int legBet.value )
         ]
+
+
+decodeLegBet : Json.Decode.Decoder LegBet
+decodeLegBet =
+    Json.Decode.succeed LegBet
+        |> Json.Decode.Pipeline.required "color" Json.Decode.string
+        |> Json.Decode.Pipeline.required "value" Json.Decode.int
 
 
 encodePlayerStatus : PlayerStatus -> Json.Encode.Value
@@ -506,9 +526,22 @@ encodePlayerStatus playerStatus =
         ]
 
 
+decodePlayerStatus : Json.Decode.Decoder PlayerStatus
+decodePlayerStatus =
+    Json.Decode.succeed PlayerStatus
+        |> Json.Decode.Pipeline.required "name" Json.Decode.string
+        |> Json.Decode.Pipeline.required "money" Json.Decode.int
+        |> Json.Decode.Pipeline.required "bets" (Json.Decode.list decodeLegBet)
+
+
 encodePreviousDices : List String -> Json.Encode.Value
 encodePreviousDices previousDices =
     Json.Encode.list Json.Encode.string previousDices
+
+
+decodePreviousDices : Json.Decode.Decoder (List String)
+decodePreviousDices =
+    Json.Decode.list Json.Decode.string
 
 
 encodePersonalItems : PersonalItems -> Json.Encode.Value
@@ -518,6 +551,14 @@ encodePersonalItems personalItems =
         , ( "bigWinnerBets", Json.Encode.list Json.Encode.string personalItems.bigWinnerBets )
         , ( "bigLooserBets", Json.Encode.list Json.Encode.string personalItems.bigLooserBets )
         ]
+
+
+decodePersonalItems : Json.Decode.Decoder PersonalItems
+decodePersonalItems =
+    Json.Decode.succeed PersonalItems
+        |> Json.Decode.Pipeline.required "tiles" (Json.Decode.list Json.Decode.string)
+        |> Json.Decode.Pipeline.required "bigWinnerBets" (Json.Decode.list Json.Decode.string)
+        |> Json.Decode.Pipeline.required "bigLooserBets" (Json.Decode.list Json.Decode.string)
 
 
 encodeState : State -> Json.Encode.Value
@@ -555,6 +596,45 @@ encodeState state =
     Json.Encode.string stateString
 
 
+decodeState : Json.Decode.Decoder State
+decodeState =
+    let
+        strToState : String -> State
+        strToState str =
+            case str of
+                "q0" ->
+                    Q0
+
+                "q0_passive" ->
+                    Q0_passive
+
+                "q1" ->
+                    Q1
+
+                "q2" ->
+                    Q2
+
+                "q3" ->
+                    Q3
+
+                "q4" ->
+                    Q4
+
+                "q5" ->
+                    Q5
+
+                "q6" ->
+                    Q6
+
+                "qerror" ->
+                    QError
+
+                _ ->
+                    QError
+    in
+    Json.Decode.map strToState Json.Decode.string
+
+
 encodeGameTable : GameTable -> Json.Encode.Value
 encodeGameTable gameTable =
     Json.Encode.object
@@ -565,3 +645,14 @@ encodeGameTable gameTable =
         , ( "avaiableLegBets", Json.Encode.list encodeLegBet gameTable.avaiableLegBets )
         , ( "personalItems", encodePersonalItems gameTable.personalItems )
         ]
+
+
+decodeGameTable : Json.Decode.Decoder GameTable
+decodeGameTable =
+    Json.Decode.succeed GameTable
+        |> Json.Decode.Pipeline.required "state" decodeState
+        |> Json.Decode.Pipeline.required "circuit" (Json.Decode.list decodeCircuit)
+        |> Json.Decode.Pipeline.required "playerStatuses" (Json.Decode.list decodePlayerStatus)
+        |> Json.Decode.Pipeline.required "previousDices" decodePreviousDices
+        |> Json.Decode.Pipeline.required "avaiableLegBets" (Json.Decode.list decodeLegBet)
+        |> Json.Decode.Pipeline.required "personalItems" decodePersonalItems
