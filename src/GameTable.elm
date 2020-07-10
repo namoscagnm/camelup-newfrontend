@@ -63,31 +63,33 @@ initState =
 
 sampleGameTable : GameTable
 sampleGameTable =
-    { state = Q0
+    { state = Q1
     , circuit =
-        [ { position = "6", items = "mirage from gustavo" }
-        , { position = "4", items = "black, blue, green, yellow, orange" }
-        , { position = "3", items = "oasis from paula" }
+        [ { position = "9", items = "green" }
+        , { position = "7", items = "black" }
+        , { position = "5", items = "orange, red" }
+        , { position = "2", items = "blue" }
         ]
     , playerStatuses =
-        [ { name = "Marina"
-          , money = 5
+        [ { name = "ana"
+          , money = 1
+          , legBets = [ { color = "black", value = 5 } ]
+          }
+        , { name = "bob"
+          , money = 1
+          , legBets = []
+          }
+        , { name = "charlie"
+          , money = 3
           , legBets = [ { color = "green", value = 5 } ]
           }
-        , { name = "Joao"
-          , money = 4
-          , legBets =
-                [ { color = "blue", value = 5 }
-                , { color = "green", value = 3 }
-                ]
-          }
         ]
-    , previousDices = [ "blue", "green", "red", "black" ]
-    , avaiableLegBets = [ { color = "blue", value = 5 }, { color = "orange", value = 3 } ]
+    , previousDices = [ "green", "black" ]
+    , avaiableLegBets = [ { color = "black", value = 3 }, { color = "blue", value = 5 }, { color = "green", value = 3 }, { color = "orange", value = 5 }, { color = "red", value = 5 } ]
     , personalItems =
         { tiles =
             [ "Oasis", "Mirage" ]
-        , finalLegBets = [ "black", "blue", "green", "orange" ]
+        , finalLegBets = [ "black", "green", "orange", "red" ]
         }
     }
 
