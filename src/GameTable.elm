@@ -1,9 +1,10 @@
-module GameTable exposing (Model, Msg, initState, update, view)
+module GameTable exposing (Model, Msg, encodeGameTable, initState, update, view)
 
 import Element exposing (..)
 import Element.Background as Background
 import Element.Input as Input
 import Html exposing (Html)
+import Json.Encode exposing (..)
 import List exposing (..)
 
 
@@ -34,7 +35,7 @@ type alias GameTable =
 
 
 type alias PlayerStatus =
-    { name : String, money : Int, bets : List LegBet }
+    { name : String, money : Int, legBets : List LegBet }
 
 
 type alias LegBet =
@@ -65,11 +66,11 @@ initState =
         , playerStatuses =
             [ { name = "Marina"
               , money = 5
-              , bets = [ { color = "green", value = 5 } ]
+              , legBets = [ { color = "green", value = 5 } ]
               }
             , { name = "Joao"
               , money = 4
-              , bets =
+              , legBets =
                     [ { color = "blue", value = 5 }
                     , { color = "green", value = 3 }
                     ]
@@ -478,3 +479,89 @@ viewStateQError =
 viewNotImplemented : Element msg
 viewNotImplemented =
     text "View not implemented on workflow"
+
+
+encodeCircuit : CircuitItem -> Json.Encode.Value
+encodeCircuit circuitItem =
+    Json.Encode.object
+        [ ( "position", Json.Encode.string circuitItem.position )
+        , ( "items", Json.Encode.string circuitItem.items )
+        ]
+
+
+encodeLegBet : LegBet -> Json.Encode.Value
+encodeLegBet legBet =
+    Json.Encode.object
+        [ ( "color", Json.Encode.string legBet.color )
+        , ( "value", Json.Encode.int legBet.value )
+        ]
+
+
+encodePlayerStatus : PlayerStatus -> Json.Encode.Value
+encodePlayerStatus playerStatus =
+    Json.Encode.object
+        [ ( "name", Json.Encode.string playerStatus.name )
+        , ( "money", Json.Encode.int playerStatus.money )
+        , ( "bets", Json.Encode.list encodeLegBet playerStatus.legBets )
+        ]
+
+
+encodePreviousDices : List String -> Json.Encode.Value
+encodePreviousDices previousDices =
+    Json.Encode.list Json.Encode.string previousDices
+
+
+encodePersonalItems : PersonalItems -> Json.Encode.Value
+encodePersonalItems personalItems =
+    Json.Encode.object
+        [ ( "tiles", Json.Encode.list Json.Encode.string personalItems.tiles )
+        , ( "bigWinnerBets", Json.Encode.list Json.Encode.string personalItems.bigWinnerBets )
+        , ( "bigLooserBets", Json.Encode.list Json.Encode.string personalItems.bigLooserBets )
+        ]
+
+
+encodeState : State -> Json.Encode.Value
+encodeState state =
+    let
+        stateString =
+            case state of
+                Q0 ->
+                    "q0"
+
+                Q0_passive ->
+                    "q0_passive"
+
+                Q1 ->
+                    "q1"
+
+                Q2 ->
+                    "q"
+
+                Q3 ->
+                    "q3"
+
+                Q4 ->
+                    "q4"
+
+                Q5 ->
+                    "q5"
+
+                Q6 ->
+                    "q6"
+
+                QError ->
+                    "qerror"
+    in
+    Json.Encode.string stateString
+
+
+encodeGameTable : GameTable -> Json.Encode.Value
+encodeGameTable gameTable =
+    Json.Encode.object
+        [ ( "state", encodeState gameTable.state )
+        , ( "circuit", Json.Encode.list encodeCircuit gameTable.circuit )
+        , ( "playerStatuses", Json.Encode.list encodePlayerStatus gameTable.playerStatuses )
+        , ( "previousDices", encodePreviousDices gameTable.previousDices )
+        , ( "avaiableLegBets", Json.Encode.list encodeLegBet gameTable.avaiableLegBets )
+        , ( "personalItems", encodePersonalItems gameTable.personalItems )
+        ]
