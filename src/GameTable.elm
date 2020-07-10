@@ -46,8 +46,7 @@ type alias LegBet =
 
 type alias PersonalItems =
     { tiles : List String
-    , bigWinnerBets : List String
-    , bigLooserBets : List String
+    , finalLegBets : List String
     }
 
 
@@ -88,8 +87,7 @@ sampleGameTable =
     , personalItems =
         { tiles =
             [ "Oasis", "Mirage" ]
-        , bigWinnerBets = [ "black", "blue", "green", "orange" ]
-        , bigLooserBets = [ "blue", "green", "orange" ]
+        , finalLegBets = [ "black", "blue", "green", "orange" ]
         }
     }
 
@@ -378,17 +376,14 @@ viewPersonalItems personalItems =
         tilesText =
             String.join "," personalItems.tiles
 
-        bigWinnerBetsText =
-            String.join "," personalItems.bigWinnerBets
-
-        bigLooserBetsText =
-            String.join "," personalItems.bigLooserBets
+        finalLegBetsText =
+            String.join "," personalItems.finalLegBets
     in
     column [ width fill ]
         [ paragraph [] [ text "-- Items avaiable to you ---" ]
         , paragraph [] [ text ("Tiles: " ++ tilesText) ]
-        , paragraph [] [ text ("Big winner bets: " ++ bigWinnerBetsText) ]
-        , paragraph [] [ text ("Big looser bets: " ++ bigLooserBetsText) ]
+        , paragraph [] [ text ("Big winner bets: " ++ finalLegBetsText) ]
+        , paragraph [] [ text ("Big looser bets: " ++ finalLegBetsText) ]
         ]
 
 
@@ -548,8 +543,7 @@ encodePersonalItems : PersonalItems -> Json.Encode.Value
 encodePersonalItems personalItems =
     Json.Encode.object
         [ ( "tiles", Json.Encode.list Json.Encode.string personalItems.tiles )
-        , ( "bigWinnerBets", Json.Encode.list Json.Encode.string personalItems.bigWinnerBets )
-        , ( "bigLooserBets", Json.Encode.list Json.Encode.string personalItems.bigLooserBets )
+        , ( "finalLegBets", Json.Encode.list Json.Encode.string personalItems.finalLegBets )
         ]
 
 
@@ -557,8 +551,7 @@ decodePersonalItems : Json.Decode.Decoder PersonalItems
 decodePersonalItems =
     Json.Decode.succeed PersonalItems
         |> Json.Decode.Pipeline.required "tiles" (Json.Decode.list Json.Decode.string)
-        |> Json.Decode.Pipeline.required "bigWinnerBets" (Json.Decode.list Json.Decode.string)
-        |> Json.Decode.Pipeline.required "bigLooserBets" (Json.Decode.list Json.Decode.string)
+        |> Json.Decode.Pipeline.required "finalLegBets" (Json.Decode.list Json.Decode.string)
 
 
 encodeState : State -> Json.Encode.Value
