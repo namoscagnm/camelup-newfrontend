@@ -1,4 +1,4 @@
-module Workflow exposing (Model, Msg, initState, update, view)
+port module Workflow exposing (Model, Msg, initState, update, view)
 
 import GameTable exposing (..)
 import Html exposing (..)
@@ -56,11 +56,15 @@ type Msg
     | ShowRules
     | Resume
     | GameTable GameTable.Msg
+    | ConnectToRoom String
 
 
 update : Model -> Msg -> ( Model, Cmd Msg )
 update state alphabet =
     case ( state, alphabet ) of
+        ( Q0 _, ConnectToRoom room ) ->
+            ( state, joinRoom room )
+
         ( Q0 _, JoinTable ) ->
             ( Q1 { char = PurpleWoman, playersOnTable = 0, otherChars = [ GreenMan, BrownMan ] }, Cmd.none )
 
@@ -123,6 +127,7 @@ viewStateQ0 content =
         , text ("Your current name:" ++ content.name)
         , p [] [ text ("current global players: " ++ String.fromInt content.totalPlayers) ]
         , button [ onClick JoinTable ] [ text "Join free table" ]
+        , button [ onClick (ConnectToRoom "2") ] [ text "Join room 2" ]
         ]
 
 
@@ -165,3 +170,10 @@ viewNotImplemented =
 viewError : Html Msg
 viewError =
     text "State transition error inside FEState logic"
+
+
+
+---- PORTS ----
+
+
+port joinRoom : String -> Cmd msg

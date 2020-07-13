@@ -1,8 +1,12 @@
-module Main exposing (..)
+port module Main exposing (..)
 
 import Browser
+import GameTable exposing (decodeGameTable)
 import Html exposing (..)
 import Html.Attributes exposing (..)
+import Html.Events exposing (..)
+import Json.Decode exposing (decodeValue)
+import Json.Encode exposing (..)
 import Workflow exposing (..)
 
 
@@ -38,7 +42,7 @@ update msg model =
             in
             ( { model | workflowState = workflowState }, Cmd.map Workflow newcmd )
 
-        _ ->
+        NoOp ->
             ( model, Cmd.none )
 
 
@@ -48,8 +52,18 @@ update msg model =
 
 view : Model -> Html Msg
 view model =
-    Html.map Workflow
-        (Workflow.view model.workflowState)
+    div []
+        [ Html.map Workflow
+            (Workflow.view model.workflowState)
+        ]
+
+
+
+---- SUBSCRIPTIONS --
+---- PORTS ----
+
+
+port receiveGameTable : (Json.Encode.Value -> msg) -> Sub msg
 
 
 
