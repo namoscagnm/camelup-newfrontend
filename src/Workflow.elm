@@ -92,6 +92,25 @@ update state alphabet =
             ( QError, Cmd.none )
 
 
+view : Model -> Html Msg
+view state =
+    case state of
+        Q0 q0Content ->
+            viewStateQ0 q0Content
+
+        Q1 q1Content ->
+            viewStateQ1 q1Content
+
+        Q2 q2Content ->
+            viewStateQ2 q2Content
+
+        Q3 ->
+            viewStateQ3
+
+        QError ->
+            viewError
+
+
 viewStateQ0 : Q0Content -> Html Msg
 viewStateQ0 content =
     div []
@@ -136,25 +155,6 @@ viewStateQ3 =
         [ text "You are seeing the game rules"
         , button [ onClick Resume ] [ text "Go back to game" ]
         ]
-
-
-view : Model -> Html Msg
-view state =
-    case state of
-        Q0 q0Content ->
-            viewStateQ0 q0Content
-
-        Q1 q1Content ->
-            viewStateQ1 q1Content
-
-        Q2 q2Content ->
-            viewStateQ2 q2Content
-
-        Q3 ->
-            viewStateQ3
-
-        QError ->
-            viewError
 
 
 viewNotImplemented : Html Msg
