@@ -1,4 +1,4 @@
-port module Main exposing (..)
+module Main exposing (..)
 
 import Browser
 import GameTable exposing (decodeGameTable)
@@ -60,13 +60,19 @@ view model =
 
 
 ---- SUBSCRIPTIONS --
+
+
+subscriptions : Model -> Sub Msg
+subscriptions model =
+    let
+        _ =
+            Debug.log "Inside sub of man " 1
+    in
+    Sub.map Workflow (Workflow.subscriptions model.workflowState)
+
+
+
 ---- PORTS ----
-
-
-port receiveGameTable : (Json.Encode.Value -> msg) -> Sub msg
-
-
-
 ---- PROGRAM ----
 
 
@@ -76,5 +82,5 @@ main =
         { view = view
         , init = \_ -> init
         , update = update
-        , subscriptions = always Sub.none
+        , subscriptions = subscriptions
         }

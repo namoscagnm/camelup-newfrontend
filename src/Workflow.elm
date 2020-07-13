@@ -1,9 +1,11 @@
-port module Workflow exposing (Model, Msg, initState, update, view)
+port module Workflow exposing (Model, Msg, initState, subscriptions, update, view)
 
 import GameTable exposing (..)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
+import Json.Decode exposing (..)
+import Json.Encode exposing (..)
 
 
 initState : Model
@@ -57,6 +59,7 @@ type Msg
     | Resume
     | GameTable GameTable.Msg
     | ConnectToRoom String
+    | ReceiveGameTableFromServer Json.Encode.Value
 
 
 update : Model -> Msg -> ( Model, Cmd Msg )
@@ -70,6 +73,32 @@ update state alphabet =
 
         ( Q1 _, StartAndLock ) ->
             ( Q2 { text = "Workflow state Q2 generic message: You are now playing the game", gameTable = Just GameTable.initState }, Cmd.none )
+
+        ( Q1 _, ConnectToRoom room ) ->
+            ( state, joinRoom room )
+
+        ( _, ReceiveGameTableFromServer incomingData ) ->
+            let
+                _ =
+                    Debug.log "Inside update q1 rgtfs" 3
+            in
+            case Json.Decode.decodeValue GameTable.decodeGameTable incomingData of
+                Ok gt ->
+                    let
+                        gt_base =
+                            GameTable.initState
+
+                        gt_final =
+                            { gt_base | gameTable = gt }
+                    in
+                    ( Q2 { text = "Looking into sucessful gt taken from server", gameTable = Just gt_final }, Cmd.none )
+
+                Err msg ->
+                    let
+                        _ =
+                            Debug.log "Error trying to get gametable:" msg
+                    in
+                    ( state, Cmd.none )
 
         ( Q2 _, ShowRules ) ->
             ( Q3, Cmd.none )
@@ -138,7 +167,7 @@ viewStateQ1 content =
         , text ("Your current char:" ++ gameCharToString content.char)
         , p [] [ text "Other characters in this room:" ]
         , p [] [ text (List.foldl (\x y -> gameCharToString x ++ " | " ++ y) "" content.otherChars) ]
-        , button [ onClick StartAndLock ] [ text "Ask to start and lock table" ]
+        , button [ onClick (ConnectToRoom "1") ] [ text "Ask to start and lock table (actually join room 1)" ]
         ]
 
 
@@ -170,6 +199,22 @@ viewNotImplemented =
 viewError : Html Msg
 viewError =
     text "State transition error inside FEState logic"
+
+
+
+---- SUBSCRIPTIONS ---
+
+
+subscriptions : Model -> Sub Msg
+subscriptions _ =
+    let
+        _ =
+            Debug.log "Inside sub of workflow:" 2
+    in
+    receiveGameTableFromServer ReceiveGameTableFromServer
+
+
+port receiveGameTableFromServer : (Json.Encode.Value -> msg) -> Sub msg
 
 
 

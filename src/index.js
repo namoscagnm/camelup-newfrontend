@@ -32,36 +32,33 @@ const app = Elm.Main.init({
   node: document.getElementById("root"),
   flags: backend_host_http,
 });
-let channel = socket.channel("games:lobby", {});
+//var channel = socket.channel("games:lobby", {});
 
-channel.on("broadcast_game_table", (payload) => {
-  console.log(
-    `JS: Receiving ${payload} game table data from Phoenix`,
-    payload.gameTable
+//app.ports.joinRoom.subscribe(function (room) {
+
+let room = "1";
+let channel = socket.channel("games:" + room);
+console.log(`JS will ask Phoenix to join room: `, room);
+channel
+  .join()
+  .receive("ok", (resp) => {
+    console.log("Joined successfully room " + room, resp);
+  })
+  .receive("error", (resp) => {
+    console.log("Unable to join", resp);
+  })
+  .receive("timeout", () =>
+    console.log(
+      "Networking issue trying to connect to room " +
+        room +
+        ". Still waiting..."
+    )
   );
-  app.ports.receiveGameTable.send({ gameTable: payload.gameTable });
+//});
+channel.on("broadcast_game_table", (payload) => {
+  console.log(`JS: Receiving ${payload} game table data from Phoenix`, payload);
+  app.ports.receiveGameTableFromServer.send(payload);
   console.log("JS finished sending game table to Elm");
 });
-
-app.ports.joinRoom.subscribe(function (room) {
-  console.log(`JS will ask Phoenix to join room: `, room);
-  channel = socket.channel("games:" + room);
-  channel
-    .join()
-    .receive("ok", (resp) => {
-      console.log("Joined successfully room " + room, resp);
-    })
-    .receive("error", (resp) => {
-      console.log("Unable to join", resp);
-    })
-    .receive("timeout", () =>
-      console.log(
-        "Networking issue trying to connect to room " +
-          room +
-          ". Still waiting..."
-      )
-    );
-});
-
 // Action
 socket.connect();
