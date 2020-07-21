@@ -26,22 +26,42 @@ type alias Q2Content =
 
 
 type GameChar
-    = PurpleWoman
-    | GreenMan
-    | BrownMan
+    = Sarah
+    | Julia
+    | Barbara
+    | Kate
+    | Alok
+    | Abdul
+    | James
+    | Jorge
 
 
 gameCharToString : GameChar -> String
 gameCharToString char =
     case char of
-        PurpleWoman ->
-            "Purple woman"
+        Sarah ->
+            "Sarah"
 
-        GreenMan ->
-            "Green man"
+        James ->
+            "James"
 
-        BrownMan ->
-            "Brown man"
+        Jorge ->
+            "Jorge"
+
+        Kate ->
+            "Kate"
+
+        Julia ->
+            "Julia"
+
+        Barbara ->
+            "Barbara"
+
+        Alok ->
+            "Alok"
+
+        Abdul ->
+            "Abdul"
 
 
 type Model
@@ -65,17 +85,17 @@ type Msg
 update : Model -> Msg -> ( Model, Cmd Msg )
 update state alphabet =
     case ( state, alphabet ) of
-        ( Q0 _, ConnectToRoom room ) ->
-            ( state, joinRoom room )
+        ( Q0 q0Model, ConnectToRoom room ) ->
+            ( state, joinRoom { room = room, name = q0Model.name } )
 
         ( Q0 _, JoinTable ) ->
-            ( Q1 { char = PurpleWoman, playersOnTable = 0, otherChars = [ GreenMan, BrownMan ] }, Cmd.none )
+            ( Q1 { char = Sarah, playersOnTable = 0, otherChars = [ Barbara, Alok, Abdul, James, Jorge, Kate, Julia, Sarah ] }, Cmd.none )
 
         ( Q1 _, StartAndLock ) ->
             ( Q2 { text = "Workflow state Q2 generic message: You are now playing the game", gameTable = Just GameTable.initState }, Cmd.none )
 
-        ( Q1 _, ConnectToRoom room ) ->
-            ( state, joinRoom room )
+        ( Q1 q1Model, ConnectToRoom room ) ->
+            ( state, joinRoom { room = room, name = gameCharToString q1Model.char } )
 
         ( _, ReceiveGameTableFromServer incomingData ) ->
             let
@@ -221,4 +241,4 @@ port receiveGameTableFromServer : (Json.Encode.Value -> msg) -> Sub msg
 ---- PORTS ----
 
 
-port joinRoom : String -> Cmd msg
+port joinRoom : { room : String, name : String } -> Cmd msg

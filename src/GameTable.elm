@@ -1,4 +1,4 @@
-module GameTable exposing (Model, Msg, decodeGameTable, encodeGameTable, initState, sampleGameTable, update, view)
+port module GameTable exposing (Model, Msg, decodeGameTable, encodeGameTable, initState, sampleGameTable, update, view)
 
 import Element exposing (..)
 import Element.Background as Background
@@ -105,6 +105,8 @@ type Msg
     | FinishedRace
     | GotFinalWinnerMoney
     | GotFinalLooserMoney
+    | UsePyramid
+    | SendBet LegBet
 
 
 update : Model -> Msg -> ( Model, Cmd Msg )
@@ -124,10 +126,16 @@ update model msg =
             ( { model | gameTable = newGameTableState Q0_passive }, Cmd.none )
 
         ( Q0, Warmup ) ->
-            ( { model | gameTable = newGameTableState Q0 }, Cmd.none )
+            ( { model | gameTable = newGameTableState Q0 }, sendDecision { first = "warmup", second = Nothing, third = Nothing } )
 
         ( Q0, Start ) ->
-            ( { model | gameTable = newGameTableState Q1 }, Cmd.none )
+            ( { model | gameTable = newGameTableState Q1 }, sendDecision { first = "start", second = Nothing, third = Nothing } )
+
+        ( Q1, SendBet legBet ) ->
+            ( model, sendDecision { first = "bet_on_leg", second = Just legBet.color, third = Nothing } )
+
+        ( Q1, UsePyramid ) ->
+            ( model, sendDecision { first = "shake", second = Nothing, third = Nothing } )
 
         ( Q1, LastDiceThrown ) ->
             ( { model | gameTable = newGameTableState Q2 }, Cmd.none )
@@ -142,7 +150,7 @@ update model msg =
             ( { model | gameTable = newGameTableState Q0_passive }, Cmd.none )
 
         ( Q2, GotLegMoney ) ->
-            ( { model | gameTable = newGameTableState Q1 }, Cmd.none )
+            ( model, sendDecision { first = "got_leg_money", second = Nothing, third = Nothing } )
 
         ( Q2, FinishedRace ) ->
             ( { model | gameTable = newGameTableState Q6 }, Cmd.none )
@@ -154,7 +162,7 @@ update model msg =
             ( { model | gameTable = newGameTableState Q5 }, Cmd.none )
 
         ( Q6, GotLegMoney ) ->
-            ( { model | gameTable = newGameTableState Q3 }, Cmd.none )
+            ( model, sendDecision { first = "got_leg_money", second = Nothing, third = Nothing } )
 
         _ ->
             ( { model | gameTable = newGameTableState QError }, Cmd.none )
@@ -260,6 +268,12 @@ viewStateQ0 menuState circuitItems =
             { onPress = Just Warmup
             , label = el [] <| text "Warm camel up"
             }
+        , Input.button
+            [ Background.color (rgb255 0 255 0)
+            ]
+            { onPress = Just Start
+            , label = el [] <| text "Start race!"
+            }
         , paragraph [] [ text "--- Simulate a server command ---" ]
         , Input.button
             [ Background.color (rgb255 0 255 0)
@@ -349,12 +363,12 @@ viewStateQ1 menuState circuitItems previousDices avaiableLegBets personalItems =
         ]
 
 
-viewGlobalItems : List LegBet -> Element msg
+viewGlobalItems : List LegBet -> Element Msg
 viewGlobalItems avaiableLegBets =
     let
         betButton currentBet =
             Input.button []
-                { onPress = Nothing
+                { onPress = Just (SendBet currentBet)
                 , label = text (currentBet.color ++ "/" ++ String.fromInt currentBet.value ++ ", ")
                 }
 
@@ -363,7 +377,10 @@ viewGlobalItems avaiableLegBets =
     in
     column [ width fill ]
         [ paragraph [] [ text "--- Items avaiable to all ---" ]
-        , paragraph [] [ text "Pyramid" ]
+        , Input.button [ Background.color (rgb255 0 255 0) ]
+            { onPress = Just UsePyramid
+            , label = el [] <| text "Pyramid"
+            }
         , paragraph []
             ([ text "Bets on leg winners:"
              ]
@@ -651,3 +668,14 @@ decodeGameTable =
         |> Json.Decode.Pipeline.required "previousDices" decodePreviousDices
         |> Json.Decode.Pipeline.required "avaiableLegBets" (Json.Decode.list decodeLegBet)
         |> Json.Decode.Pipeline.required "personalItems" decodePersonalItems
+
+
+
+---- PORTS ----
+
+
+type alias Decision =
+    { first : String, second : Maybe String, third : Maybe Int }
+
+
+port sendDecision : Decision -> Cmd msg

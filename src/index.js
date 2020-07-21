@@ -1,6 +1,5 @@
 import "./main.css";
 import { Elm } from "./Main.elm";
-import * as serviceWorker from "./serviceWorker";
 
 const currentLocation_hostname = window.location.hostname;
 const backend_host_dev = "localhost:4000";
@@ -33,11 +32,12 @@ const app = Elm.Main.init({
   flags: backend_host_http,
 });
 
-let room = "1";
-let channel = socket.channel("games:" + room);
-
-app.ports.joinRoom.subscribe(function (room) {
+let channel;
+app.ports.joinRoom.subscribe(function (joinReq) {
+  let room = joinReq.room;
+  let name = joinReq.name;
   console.log(`JS will ask Phoenix to join room: `, room);
+  channel = socket.channel("games:" + room, { name: name });
   channel
     .join()
     .receive("ok", (resp) => {
@@ -53,12 +53,20 @@ app.ports.joinRoom.subscribe(function (room) {
           ". Still waiting..."
       )
     );
+
+  channel.on("broadcast_game_table", (payload) => {
+    console.log(
+      `JS: Receiving ${payload} game table data from Phoenix`,
+      payload
+    );
+    app.ports.receiveGameTableFromServer.send(payload);
+    console.log("JS finished sending game table to Elm");
+  });
 });
 
-channel.on("broadcast_game_table", (payload) => {
-  console.log(`JS: Receiving ${payload} game table data from Phoenix`, payload);
-  app.ports.receiveGameTableFromServer.send(payload);
-  console.log("JS finished sending game table to Elm");
+app.ports.sendDecision.subscribe(function (decision) {
+  channel.push("decision", decision).receive("error", (e) => console.log(e));
 });
+
 // Action
 socket.connect();
