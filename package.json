@@ -1,0 +1,26 @@
+{
+  "name": "camelup-newfrontend",
+  "version": "1.0.0",
+  "description": "This project is bootstrapped with [Create Elm App](https://github.com/halfzebra/create-elm-app).",
+  "main": "index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "dependencies": {
+    "phoenix": "^1.5.4"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/namoscagnm/camelup-newfrontend.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/namoscagnm/camelup-newfrontend/issues"
+  },
+  "homepage": "https://github.com/namoscagnm/camelup-newfrontend#readme"
+}
