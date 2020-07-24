@@ -156,7 +156,7 @@ update model msg =
             ( { model | gameTable = newGameTableState Q6 }, Cmd.none )
 
         ( Q3, GotFinalWinnerMoney ) ->
-            ( { model | gameTable = newGameTableState Q4 }, Cmd.none )
+            ( model, sendDecision { first = "got_final_winner_money", second = Nothing, third = Nothing } )
 
         ( Q4, GotFinalLooserMoney ) ->
             ( { model | gameTable = newGameTableState Q5 }, Cmd.none )
