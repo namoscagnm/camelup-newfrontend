@@ -150,19 +150,19 @@ update model msg =
             ( { model | gameTable = newGameTableState Q0_passive }, Cmd.none )
 
         ( Q2, GotLegMoney ) ->
-            ( model, sendDecision { first = "got_leg_money", second = Nothing, third = Nothing } )
+            ( model, sendDecision { first = "get_leg_money", second = Nothing, third = Nothing } )
 
         ( Q2, FinishedRace ) ->
             ( { model | gameTable = newGameTableState Q6 }, Cmd.none )
 
         ( Q3, GotFinalWinnerMoney ) ->
-            ( model, sendDecision { first = "got_final_winner_money", second = Nothing, third = Nothing } )
+            ( model, sendDecision { first = "get_final_winner_money", second = Nothing, third = Nothing } )
 
         ( Q4, GotFinalLooserMoney ) ->
             ( { model | gameTable = newGameTableState Q5 }, Cmd.none )
 
         ( Q6, GotLegMoney ) ->
-            ( model, sendDecision { first = "got_leg_money", second = Nothing, third = Nothing } )
+            ( model, sendDecision { first = "get_leg_money", second = Nothing, third = Nothing } )
 
         _ ->
             ( { model | gameTable = newGameTableState QError }, Cmd.none )
