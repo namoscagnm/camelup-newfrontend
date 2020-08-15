@@ -66,7 +66,9 @@ subscriptions : Model -> Sub Msg
 subscriptions model =
     let
         _ =
-            Debug.log "Inside sub of man " 1
+            "nothing"
+
+        -- Debug.log "Inside sub of man " 1
     in
     Sub.map Workflow (Workflow.subscriptions model.workflowState)
 

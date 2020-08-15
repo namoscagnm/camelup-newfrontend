@@ -108,7 +108,9 @@ update state alphabet =
         ( _, ReceiveGameTableFromServer incomingData ) ->
             let
                 _ =
-                    Debug.log "Inside update q1 rgtfs" 3
+                    "nothing"
+
+                --Debug.log "Inside update q1 rgtfs" 3
             in
             case Json.Decode.decodeValue GameTable.decodeGameTable incomingData of
                 Ok gt ->
@@ -124,7 +126,9 @@ update state alphabet =
                 Err msg ->
                     let
                         _ =
-                            Debug.log "Error trying to get gametable:" msg
+                            "nothing"
+
+                        -- Debug.log "Error trying to get gametable:" msg
                     in
                     ( state, Cmd.none )
 
@@ -245,7 +249,9 @@ subscriptions : Model -> Sub Msg
 subscriptions _ =
     let
         _ =
-            Debug.log "Inside sub of workflow:" 2
+            "nothing"
+
+        --Debug.log "Inside sub of workflow:" 2
     in
     receiveGameTableFromServer ReceiveGameTableFromServer
 
