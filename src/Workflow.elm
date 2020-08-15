@@ -80,6 +80,7 @@ type Msg
     | GameTable GameTable.Msg
     | ConnectToRoom String
     | ReceiveGameTableFromServer Json.Encode.Value
+    | SelectChar GameChar
 
 
 update : Model -> Msg -> ( Model, Cmd Msg )
@@ -96,6 +97,13 @@ update state alphabet =
 
         ( Q1 q1Model, ConnectToRoom room ) ->
             ( state, joinRoom { room = room, name = gameCharToString q1Model.char } )
+
+        ( Q1 q1Model, SelectChar gameChar ) ->
+            let
+                newState =
+                    { q1Model | char = gameChar }
+            in
+            ( Q1 newState, Cmd.none )
 
         ( _, ReceiveGameTableFromServer incomingData ) ->
             let
@@ -182,12 +190,20 @@ viewStateQ0 content =
 
 viewStateQ1 : Q1Content -> Html Msg
 viewStateQ1 content =
+    let
+        charOpt : GameChar -> Html Msg
+        charOpt gc =
+            button [ onClick (SelectChar gc) ] [ text (gameCharToString gc) ]
+
+        charsOpt =
+            List.map charOpt content.otherChars
+    in
     div []
         [ p [] [ text ("Amount of players in this room: " ++ String.fromInt content.playersOnTable) ]
         , text ("Your current char:" ++ gameCharToString content.char)
-        , p [] [ text "Other characters in this room:" ]
-        , p [] [ text (List.foldl (\x y -> gameCharToString x ++ " | " ++ y) "" content.otherChars) ]
-        , button [ onClick (ConnectToRoom "1") ] [ text "Ask to start and lock table (actually join room 1)" ]
+        , p [] [ text "Other characters you can choose from:" ]
+        , p [] charsOpt
+        , button [ onClick (ConnectToRoom "1") ] [ text "Join room 1" ]
         ]
 
 
