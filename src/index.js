@@ -3,7 +3,7 @@ import { Elm } from "./Main.elm";
 
 const currentLocation_hostname = window.location.hostname;
 const backend_host_dev = "localhost:4000";
-const backend_host_prod = "camelup.gigalixirapp.com";
+const backend_host_prod = "camelapp.gigalixirapp.com";
 
 const backend_host_ws =
   currentLocation_hostname !== "camelup.now.sh"
