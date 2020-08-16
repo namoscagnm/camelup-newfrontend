@@ -367,7 +367,7 @@ viewGlobalItems : List LegBet -> Element Msg
 viewGlobalItems avaiableLegBets =
     let
         betButton currentBet =
-            Input.button []
+            Input.button [ Background.color (rgb255 0 255 0) ]
                 { onPress = Just (SendBet currentBet)
                 , label = text (currentBet.color ++ "/" ++ String.fromInt currentBet.value ++ ", ")
                 }
