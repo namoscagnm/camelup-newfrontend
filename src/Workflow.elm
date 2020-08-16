@@ -18,7 +18,7 @@ type alias Q0Content =
 
 
 type alias Q1Content =
-    { char : GameChar, playersOnTable : Int, otherChars : List GameChar }
+    { char : GameChar, playersOnTable : Int, otherChars : List GameChar, room : String }
 
 
 type alias Q2Content =
@@ -81,6 +81,7 @@ type Msg
     | ConnectToRoom String
     | ReceiveGameTableFromServer Json.Encode.Value
     | SelectChar GameChar
+    | SetRoom String
 
 
 update : Model -> Msg -> ( Model, Cmd Msg )
@@ -90,13 +91,20 @@ update state alphabet =
             ( state, joinRoom { room = room, name = q0Model.name } )
 
         ( Q0 _, JoinTable ) ->
-            ( Q1 { char = Sarah, playersOnTable = 0, otherChars = [ Barbara, Alok, Abdul, James, Jorge, Kate, Julia, Sarah ] }, Cmd.none )
+            ( Q1 { char = Sarah, playersOnTable = 0, otherChars = [ Barbara, Alok, Abdul, James, Jorge, Kate, Julia, Sarah ], room = "1" }, Cmd.none )
 
         ( Q1 _, StartAndLock ) ->
             ( Q2 { text = "Workflow state Q2 generic message: You are now playing the game", gameTable = Just GameTable.initState }, Cmd.none )
 
         ( Q1 q1Model, ConnectToRoom room ) ->
             ( state, joinRoom { room = room, name = gameCharToString q1Model.char } )
+
+        ( Q1 q1Model, SetRoom room ) ->
+            let
+                newQ1 =
+                    { q1Model | room = room }
+            in
+            ( Q1 newQ1, Cmd.none )
 
         ( Q1 q1Model, SelectChar gameChar ) ->
             let
@@ -188,7 +196,6 @@ viewStateQ0 content =
         , text ("Your current name:" ++ content.name)
         , p [] [ text ("current global players: " ++ String.fromInt content.totalPlayers) ]
         , button [ onClick JoinTable ] [ text "Join free table" ]
-        , button [ onClick (ConnectToRoom "2") ] [ text "Join room 2" ]
         ]
 
 
@@ -207,7 +214,9 @@ viewStateQ1 content =
         , text ("Your current char:" ++ gameCharToString content.char)
         , p [] [ text "Other characters you can choose from:" ]
         , p [] charsOpt
-        , button [ onClick (ConnectToRoom "1") ] [ text "Join room 1" ]
+        , p [] [ text "Room name:" ]
+        , input [ placeholder "Room to join", Html.Attributes.value content.room, Html.Events.onInput SetRoom ] []
+        , button [ onClick (ConnectToRoom content.room) ] [ text "Join room" ]
         ]
 
 
