@@ -304,7 +304,7 @@ viewCircuit circuitItems =
                 , { header = Element.text "Items"
                   , width = fill
                   , view =
-                        \person -> Element.text person.items
+                        \person -> paragraph [] [ el [ alignRight ] (Element.text (person.items ++ "|ground")) ]
                   }
                 ]
             }
