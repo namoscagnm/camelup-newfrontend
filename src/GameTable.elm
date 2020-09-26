@@ -261,7 +261,7 @@ viewStateQ0 menuState circuitItems =
     Element.column [ width fill ]
         [ viewStateDescription menuState.showStateDesc "Q0: All five camels are sleeping and you have to wake them up. Roll the dices until they arent asleep anymore. Please, hurry up! Other players are waiting for you :)"
         , viewCircuit circuitItems
-        , Element.paragraph [] [ text "--- Simulate user command ---" ]
+        , Element.paragraph [] [ text "--- User command ---" ]
         , Input.button
             [ Background.color (rgb255 0 255 0)
             ]
@@ -273,13 +273,6 @@ viewStateQ0 menuState circuitItems =
             ]
             { onPress = Just Start
             , label = el [] <| text "Start race!"
-            }
-        , paragraph [] [ text "--- Simulate a server command ---" ]
-        , Input.button
-            [ Background.color (rgb255 0 255 0)
-            ]
-            { onPress = Just Start
-            , label = el [] <| text "Start"
             }
         ]
 
@@ -345,21 +338,6 @@ viewStateQ1 menuState circuitItems previousDices avaiableLegBets personalItems =
         , viewDiceRecord previousDices
         , viewGlobalItems avaiableLegBets
         , viewPersonalItems personalItems
-        , column [ width fill ]
-            [ paragraph [] [ text "--- Simulate a server command ---" ]
-            , Input.button
-                [ Background.color (rgb255 0 255 0)
-                ]
-                { onPress = Just LastDiceThrown
-                , label = el [] <| text "Leg finished"
-                }
-            , Input.button
-                [ Background.color (rgb255 0 255 0)
-                ]
-                { onPress = Just FinishedRace
-                , label = el [] <| text "Finish race"
-                }
-            ]
         ]
 
 
@@ -424,7 +402,6 @@ viewStateQ2 =
         [ Element.paragraph []
             [ Element.text "Q2: That was an amazing race and you can now get money for your bets on the previous leg!"
             ]
-        , paragraph [] [ text "Simulate an server command" ]
         , Input.button
             [ Background.color (rgb255 0 255 0)
             ]
@@ -440,7 +417,6 @@ viewStateQ3 =
         [ Element.paragraph []
             [ Element.text "Q3: You got some money, but now as I said its time go get much more!! Who bet corretly on the first winner? Better yet, who was the FIRST to bet correctly? You can get up to 8 points if you were the earliest lucky one!"
             ]
-        , paragraph [] [ text "Simulate an server command" ]
         , Input.button
             [ Background.color (rgb255 0 255 0)
             ]
@@ -456,7 +432,6 @@ viewStateQ4 =
         [ Element.paragraph []
             [ Element.text "Q4: Maybe you got money,maybe you didnt. But as far as good news go, you have yet one chance more! Because betting on the final looser can also give you great mone!"
             ]
-        , paragraph [] [ text "Simulate an server command" ]
         , Input.button
             [ Background.color (rgb255 0 255 0)
             ]
@@ -481,7 +456,6 @@ viewStateQ6 =
         [ Element.paragraph []
             [ Element.text "Q6: After many ups and downs, the race is finally finished! After collecing this legs money, bigger prizes are to come! If you got the final winner or final looser right, your pocket will leave you feeling you carry a stone of gold :)"
             ]
-        , paragraph [] [ text "Simulate an server command" ]
         , Input.button
             [ Background.color (rgb255 0 255 0)
             ]
