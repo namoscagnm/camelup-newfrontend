@@ -334,10 +334,10 @@ viewStateQ1 : MenuState -> List CircuitItem -> List String -> List LegBet -> Per
 viewStateQ1 menuState circuitItems previousDices avaiableLegBets personalItems =
     Element.column [ spacingXY 0 10, width fill ]
         [ viewStateDescription menuState.showStateDesc "Q1: You can now get a point by shaking the dice, or get no points now and try to bet in a camel for the current leg, or put a mirage tile to annoy other camels and get some money if they fall there. You can also put a oasis tile to help some camel (you also get a point if he lands there), or bet on the final winner or looser"
-        , viewCircuit circuitItems
-        , viewDiceRecord previousDices
-        , viewGlobalItems avaiableLegBets
-        , viewPersonalItems personalItems
+        , Element.el [ width fill ] (viewCircuit circuitItems)
+        , Element.el [ Background.color (rgb255 125 125 125), width fill ] (viewDiceRecord previousDices)
+        , Element.el [ width fill ] (viewGlobalItems avaiableLegBets)
+        , Element.el [ Background.color (rgb255 125 125 125), width fill ] (viewPersonalItems personalItems)
         ]
 
 
