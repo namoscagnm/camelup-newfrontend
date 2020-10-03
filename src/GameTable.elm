@@ -4,6 +4,7 @@ import Element exposing (..)
 import Element.Background as Background
 import Element.Input as Input
 import Html exposing (Html)
+import Html.Attributes
 import Json.Decode exposing (..)
 import Json.Decode.Pipeline exposing (required)
 import Json.Encode exposing (..)
@@ -283,6 +284,22 @@ type alias CircuitItem =
 
 viewCircuit : List CircuitItem -> Element msg
 viewCircuit circuitItems =
+    let
+        iconFromColor : String -> Element msg
+        iconFromColor color =
+            Element.el [] <| Element.html (Html.i [ Html.Attributes.class "fas fa-chess-knight", Html.Attributes.style "color" color ] [])
+
+        iconsFromColors : List String -> Element msg
+        iconsFromColors colors =
+            Element.row [] (List.map (\c -> iconFromColor c) colors)
+
+        colorsStringToList : String -> List String
+        colorsStringToList string =
+            String.split "," string
+
+        finalStuffFromItems str =
+            str |> colorsStringToList |> iconsFromColors
+    in
     Element.column []
         [ paragraph [] [ text "--- Circuit view---" ]
         , Element.table []
@@ -297,7 +314,7 @@ viewCircuit circuitItems =
                 , { header = Element.text "Items"
                   , width = fill
                   , view =
-                        \person -> paragraph [] [ el [ alignRight ] (Element.text (person.items ++ "|ground")) ]
+                        \person -> paragraph [] [ el [ alignRight ] (finalStuffFromItems person.items) ]
                   }
                 ]
             }
